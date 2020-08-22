@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-elk
+  labels:
+    app: my-app-elk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app-elk
+  template:
+    metadata:
+      labels:
+        app: my-app-elk
+    spec:
+      containers:
+        - name: my-app-elk
+          image: my-app-elk:1.0
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+
+        - name: my-app-elk-sidecar
+          image: alpine:3.12
+          args: [/bin/sh, -c, 'tail -n+1 -F /var/log/my-app.log 2> /dev/null']
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+      volumes:
+        - name: varlog
+          emptyDir: {}
